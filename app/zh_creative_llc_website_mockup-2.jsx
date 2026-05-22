@@ -1,4 +1,45 @@
+import { useState } from 'react';
+
 export default function ZHCreativeWebsite() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    service: 'Logo',
+    budget: '$250 - $500',
+    vision: ''
+  });
+  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('loading');
+
+    try {
+      const res = await fetch('https://formspree.io/f/xbdbovvg', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (res.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', service: 'Logo', budget: '$250 - $500', vision: '' });
+      } else {
+        setStatus('error');
+      }
+    } catch {
+      setStatus('error');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 text-white font-sans">
       {/* Hero + Design Brief */}
@@ -46,14 +87,18 @@ export default function ZHCreativeWebsite() {
               </h2>
             </div>
 
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={handleSubmit}>
               <div>
                 <label className="text-sm font-medium block mb-2">
                   Name
                 </label>
                 <input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   className="w-full rounded-2xl border border-neutral-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                   placeholder="Your name"
+                  required
                 />
               </div>
 
@@ -62,8 +107,13 @@ export default function ZHCreativeWebsite() {
                   Email
                 </label>
                 <input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full rounded-2xl border border-neutral-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                   placeholder="you@example.com"
+                  required
                 />
               </div>
 
@@ -71,7 +121,12 @@ export default function ZHCreativeWebsite() {
                 <label className="text-sm font-medium block mb-2">
                   Service Needed
                 </label>
-                <select className="w-full rounded-2xl border border-neutral-200 px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-black">
+                <select
+                  name="service"
+                  value={formData.service}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-black"
+                >
                   <option>Logo</option>
                   <option>Illustration</option>
                   <option>Product Mock-up</option>
@@ -84,12 +139,16 @@ export default function ZHCreativeWebsite() {
                 <label className="text-sm font-medium block mb-2">
                   Budget Range
                 </label>
-                <select className="w-full rounded-2xl border border-neutral-200 px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-black">
+                <select
+                  name="budget"
+                  value={formData.budget}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-neutral-200 px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-black"
+                >
                   <option>$250 - $500</option>
                   <option>$500 - $1,000</option>
                   <option>$1,000 - $3,000</option>
                   <option>$3,000+</option>
-                
                 </select>
               </div>
 
@@ -98,15 +157,29 @@ export default function ZHCreativeWebsite() {
                   Project Vision
                 </label>
                 <textarea
+                  name="vision"
                   rows={5}
+                  value={formData.vision}
+                  onChange={handleChange}
                   className="w-full rounded-2xl border border-neutral-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black"
                   placeholder="Describe the look, feel, goals, or inspiration for your project..."
                 />
               </div>
 
-              <button className="w-full bg-black text-white rounded-2xl py-4 text-sm uppercase tracking-[0.2em] hover:bg-neutral-800 transition-colors">
-                Submit Design Brief
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="w-full bg-black text-white rounded-2xl py-4 text-sm uppercase tracking-[0.2em] hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {status === 'loading' ? 'Submitting...' : 'Submit Design Brief'}
               </button>
+
+              {status === 'success' && (
+                <p className="text-green-600 text-sm text-center mt-2">✓ Brief received! We'll be in touch shortly.</p>
+              )}
+              {status === 'error' && (
+                <p className="text-red-500 text-sm text-center mt-2">Something went wrong. Please try again.</p>
+              )}
             </form>
           </div>
         </div>
@@ -215,5 +288,5 @@ export default function ZHCreativeWebsite() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
